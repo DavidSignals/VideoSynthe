@@ -23,30 +23,6 @@ Created by **David Signals**.
 
 ---
 
-## 🚀 Installation and Usage
-
-Due to the strict privacy and security policies of modern browsers regarding webcam usage (`getUserMedia`), the application **cannot** be opened simply by double-clicking the `index.html` file. You need a local server.
-
-### Prerequisites
-Make sure you have Python or Node.js installed on your system.
-
-### Instructions
-
-1.  Open your terminal.
-2.  Navigate to the project directory:
-    ```bash
-    cd /Users/david/.gemini/antigravity/scratch/VideoSynthe
-    ```
-3.  Start a local web server. If you have Python 3, run:
-    ```bash
-    python3 -m http.server 8000
-    ```
-4.  Open your preferred browser (Chrome or Firefox recommended) and go to:
-    [http://localhost:8000](http://localhost:8000)
-5.  Accept the camera permissions and click **START EXPERIENCE**.
-
----
-
 ## 🎛️ Modulation Rules (Visual -> Audio)
 
 | Visual Stimulus | Synthesizer Parameter | Sonic Result |
