@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoSynthe - See with your ears</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neonPrimary: '#00f3ff',
+                        neonSecondary: '#ff003c',
+                        darkBg: '#050505',
+                        panel: '#111111'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        #camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            filter: contrast(1.2) saturate(1.2);
+            transition: opacity 0.3s ease;
+        }
+        
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* Splash Screen overlay */
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 50;
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .pointer-auto {
+            pointer-events: auto;
+        }
+
+        .logo-svg {
+            width: 48px;
+            height: 48px;
+            fill: none;
+            stroke: #00f3ff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 5px #00f3ff);
+        }
+
+        .logo-svg-large {
+            width: 96px;
+            height: 96px;
+            fill: none;
+            stroke: #00f3ff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 10px #00f3ff);
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        #oscilloscope {
+            width: 100%;
+            height: 100px;
+            filter: drop-shadow(0 0 5px #00f3ff);
+        }
+
+        .recording-pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 0, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0); }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <svg class="logo-svg-large mb-6" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="24" r="16" />
+            <circle cx="32" cy="24" r="6" />
+            <path d="M16 24 A16 16 0 0 1 48 24" stroke-dasharray="4 4" />
+            <rect x="12" y="46" width="8" height="12" rx="2" />
+            <rect x="22" y="46" width="8" height="12" rx="2" />
+            <rect x="32" y="46" width="8" height="12" rx="2" />
+            <rect x="42" y="46" width="8" height="12" rx="2" />
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="52" cy="12" r="3" />
+        </svg>
+        <h1 class="text-5xl font-bold tracking-widest text-white drop-shadow-[0_0_15px_rgba(0,243,255,0.8)] mb-2">VIDEOSYNTHE</h1>
+        <p class="text-lg tracking-widest text-gray-400 uppercase mb-8">See with your ears</p>
+        
+        <button id="start-btn" class="px-8 py-3 bg-transparent border-2 border-neonPrimary text-neonPrimary hover:bg-neonPrimary hover:text-black font-bold tracking-widest uppercase transition-all duration-300 shadow-[0_0_15px_rgba(0,243,255,0.3)] hover:shadow-[0_0_30px_rgba(0,243,255,0.6)] mb-12">
+            Start Experience
+        </button>
+
+        <div class="text-center mt-8 border-t border-gray-800 pt-8 w-64">
+            <p class="text-sm text-gray-500 tracking-wider mb-2">Created By</p>
+            <p class="text-xl font-bold text-white tracking-widest mb-6 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">DAVID SIGNALS</p>
+            
+            <a href="https://www.paypal.com/paypalme/rabagocb" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-[#00457C] hover:bg-[#0079C1] text-white text-sm font-semibold rounded transition-colors shadow-lg">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/>
+                </svg>
+                Donate via PayPal
+            </a>
+            <p class="text-xs text-gray-600 mt-2">rabago.cb@gmail.com</p>
+        </div>
+    </div>
+
+    <!-- Video Background -->
+    <div id="video-container">
+        <video id="camera-video" autoplay muted playsinline></video>
+    </div>
+
+    <canvas id="analysis-canvas" style="display: none;"></canvas>
+
+    <div id="ui-layer">
+        <header class="flex justify-between items-start">
+            <div class="flex items-center gap-4">
+                <svg class="logo-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="24" r="16" />
+                    <circle cx="32" cy="24" r="6" />
+                    <path d="M16 24 A16 16 0 0 1 48 24" stroke-dasharray="4 4" />
+                    <rect x="12" y="46" width="8" height="12" rx="2" />
+                    <rect x="22" y="46" width="8" height="12" rx="2" />
+                    <rect x="32" y="46" width="8" height="12" rx="2" />
+                    <rect x="42" y="46" width="8" height="12" rx="2" />
+                    <circle cx="12" cy="12" r="3" />
+                    <circle cx="52" cy="12" r="3" />
+                </svg>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-widest text-white drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]">VIDEOSYNTHE</h1>
+                    <p class="text-sm tracking-widest text-gray-400 uppercase">See with your ears</p>
+                </div>
+            </div>
+            
+            <div class="text-right pointer-auto flex flex-col items-end">
+                <div id="status-text" class="text-neonPrimary font-mono text-sm tracking-widest uppercase animate-pulse">
+                    Ready
+                </div>
+                <!-- Download Audio Button (Hidden by default) -->
+                <button id="download-audio-btn" class="hidden mt-4 px-4 py-2 bg-neonSecondary text-white text-xs font-bold tracking-widest uppercase rounded shadow-[0_0_10px_rgba(255,0,60,0.5)] hover:scale-105 transition-transform flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download Audio
+                </button>
+                <div id="param-display" class="text-xs text-gray-500 font-mono mt-4 flex flex-col gap-1 items-end">
+                    <span>LUMA: <span id="val-luma">0</span></span>
+                    <span>HUE: <span id="val-hue">0</span></span>
+                    <span>MOTN: <span id="val-motion">0</span></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex flex-col items-center justify-end flex-grow pb-8">
+            <div class="relative flex justify-center items-center pointer-auto group mb-8 cursor-pointer" id="record-btn">
+                <svg class="absolute w-24 h-24" viewBox="0 0 100 100">
+                    <circle class="text-gray-800 stroke-current" stroke-width="4" cx="50" cy="50" r="46" fill="transparent"></circle>
+                    <circle id="progress-circle" class="text-neonSecondary stroke-current progress-ring__circle" stroke-width="4" cx="50" cy="50" r="46" fill="transparent" stroke-dasharray="289" stroke-dashoffset="289"></circle>
+                </svg>
+                
+                <div id="record-inner" class="w-16 h-16 bg-white rounded-full transition-all duration-300 flex justify-center items-center shadow-[0_0_15px_rgba(255,255,255,0.5)] group-hover:scale-105">
+                    <div class="w-6 h-6 bg-red-600 rounded-full" id="record-icon"></div>
+                </div>
+            </div>
+
+            <div class="w-full max-w-3xl pointer-auto">
+                <canvas id="oscilloscope"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="audio.js?v=4"></script>
+    <script src="analyzer.js?v=4"></script>
+    <script src="capture.js?v=4"></script>
+    <!-- LameJS for MP3 Encoding -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+    <script src="app.js?v=4"></script>
+</body>
+</html>
