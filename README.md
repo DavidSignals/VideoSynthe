@@ -1,4 +1,4 @@
-# 👁️ VideoSynthe
+# 👁️ VideoSynthe 🎛️
 **"See with your ears"**
 
 ![Version](https://img.shields.io/badge/version-3.0-blue.svg)
