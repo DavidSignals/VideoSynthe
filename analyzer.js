@@ -41,11 +41,16 @@ class VideoAnalyzer {
     }
 
     analyzeFrame() {
-        // We removed video.paused check to guarantee loop continuity.
-        if (this.video.ended) return this.currentData;
+        // Guarantee loop continuity, but ensure video has data
+        if (this.video.readyState < 2) return this.currentData; // HAVE_CURRENT_DATA or better
 
-        // Draw current video frame to canvas
-        this.ctx.drawImage(this.video, 0, 0, this.resolution, this.resolution);
+        try {
+            // Draw current video frame to canvas
+            this.ctx.drawImage(this.video, 0, 0, this.resolution, this.resolution);
+        } catch (e) {
+            // If drawImage fails (e.g. empty video), return old data
+            return this.currentData;
+        }
         let frame = this.ctx.getImageData(0, 0, this.resolution, this.resolution);
         let data = frame.data;
 

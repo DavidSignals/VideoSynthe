@@ -7,21 +7,46 @@ class VideoCapture {
         this.recordedChunks = [];
         this.isRecording = false;
         this.onRecordingComplete = null;
+        this.facingMode = 'environment'; // default to rear camera if available
     }
 
     async initCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+        }
+
         try {
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
-                audio: false
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 }, 
+                    height: { ideal: 720 },
+                    facingMode: this.facingMode
+                }, 
+                audio: false 
             });
             this.videoElement.srcObject = this.stream;
             this.videoElement.play().catch(e => console.warn("Auto-play prevented", e));
             return true;
         } catch (err) {
-            console.error("Camera access denied or unavailable", err);
-            return false;
+            console.warn("Camera with specific facingMode failed, falling back to any camera", err);
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                    audio: false 
+                });
+                this.videoElement.srcObject = this.stream;
+                this.videoElement.play().catch(e => console.warn("Auto-play prevented", e));
+                return true;
+            } catch (fallbackErr) {
+                console.error("Camera access totally denied or unavailable", fallbackErr);
+                return false;
+            }
         }
+    }
+
+    async toggleCamera() {
+        this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+        return await this.initCamera();
     }
 
     startRecording(durationMs = 30000) {

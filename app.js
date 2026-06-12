@@ -2,7 +2,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const videoEl = document.getElementById("camera-video");
     const canvasEl = document.getElementById("analysis-canvas");
-    const oscCanvas = document.getElementById("oscilloscope");
+    const oscCanvas = document.getElementById("osc-canvas");
     const oscCtx = oscCanvas.getContext("2d");
     
     // UI Elements
@@ -13,11 +13,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusText = document.getElementById("status-text");
     const recordInner = document.getElementById("record-inner");
     const downloadAudioBtn = document.getElementById("download-audio-btn");
-    
-    // Value Displays
-    const valLuma = document.getElementById("val-luma");
-    const valHue = document.getElementById("val-hue");
-    const valMotion = document.getElementById("val-motion");
+
+    // HUD Elements
+    const hudWobble = document.getElementById("hud-wobble");
+    const hudMod = document.getElementById("hud-mod");
+    const hudHarm = document.getElementById("hud-harm");
+    const hudDrive = document.getElementById("hud-drive");
+    const hudNote = document.getElementById("hud-note");
 
     // Fix Oscilloscope resolution
     oscCanvas.width = oscCanvas.parentElement.clientWidth;
@@ -46,9 +48,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = analyzer.analyzeFrame();
         audio.updateParameters(data);
 
-        valLuma.innerText = data.luma.toFixed(2);
-        valHue.innerText = data.hue.toFixed(2);
-        valMotion.innerText = data.motion.toFixed(2);
+        // Update HUD
+        const params = audio.getCurrentParams();
+        if (params) {
+            hudWobble.innerText = params.wobble.toFixed(2) + " Hz";
+            hudMod.innerText = params.modIndex.toFixed(2);
+            hudHarm.innerText = params.harmonicity.toFixed(2) + "x";
+            hudDrive.innerText = params.drive.toFixed(2);
+            hudNote.innerText = params.note.toFixed(2) + " Hz";
+        }
 
         if (capture.isRecording) {
             let elapsed = Date.now() - recordStartTime;
@@ -111,6 +119,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         capture.playBuffer(videoUrl);
     };
 
+    // Initialize Camera immediately on load so it plays behind splash screen
+    capture.initCamera().then(() => {
+        // Optional: Do something when camera is ready
+    });
+
+    // Flip Camera Button
+    const flipCameraBtn = document.getElementById("flip-camera-btn");
+    if (flipCameraBtn) {
+        flipCameraBtn.addEventListener("click", () => {
+            flipCameraBtn.innerText = "FLIPPING...";
+            flipCameraBtn.disabled = true;
+            capture.toggleCamera().then(() => {
+                flipCameraBtn.innerText = "FLIP CAM";
+                flipCameraBtn.disabled = false;
+            });
+        });
+    }
+
     // Splash Screen Start
     startBtn.addEventListener("click", async () => {
         try {
@@ -118,7 +144,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             startBtn.disabled = true;
 
             await audio.init();
-            await capture.initCamera(); 
             
             isAppActive = true;
             audio.startSound();

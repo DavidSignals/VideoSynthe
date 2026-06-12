@@ -146,6 +146,25 @@ class AudioEngine {
                 this.delay.wet.rampTo(0.1, 1.0);
             }, 400);
         }
+
+        // Store for UI HUD
+        this.currentParams = {
+            wobble: wobbleRate,
+            harmonicity: harmonics[hIndex],
+            modIndex: 2 + (hue * 50) + (saturation * 50),
+            drive: 0.1 + (luma * 1.5),
+            note: this.baseFreq
+        };
+    }
+
+    getCurrentParams() {
+        return this.currentParams || {
+            wobble: 0,
+            harmonicity: 0,
+            modIndex: 0,
+            drive: 0,
+            note: 0
+        };
     }
 
     startRecording() {
